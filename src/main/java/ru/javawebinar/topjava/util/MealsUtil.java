@@ -28,4 +28,22 @@ public class MealsUtil {
         // TODO return filtered list with correctly excess field
         return null;
     }
+
+    public static List<MealTo> getFilteredWithExcessByCycle(List<Meal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
+
+        final Map<LocalDate, Integer> caloriesSumByDate = new HashMap<>();
+        meals.forEach(meal -> caloriesSumByDate.merge(meal.getDate(), meal.getCalories(), Integer::sum));
+
+        final List<MealTo> mealsWithExcess = new ArrayList<>();
+        meals.forEach(meal -> {
+            if (TimeUtil.isBetween(meal.getTime(), startTime, endTime)) {
+                mealsWithExcess.add(createWithExcess(meal, caloriesSumByDate.get(meal.getDate()) > caloriesPerDay));
+            }
+        });
+        return mealsWithExcess;
+    }
+
+    public static MealTo createWithExcess(Meal meal, boolean excess) {
+        return new MealTo(meal.getDateTime(), meal.getDescription(), meal.getCalories(), excess);
+    }
 }
